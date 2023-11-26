@@ -20,8 +20,8 @@ Demo of On-demand ISR in [Next.js](https://nextjs.org/docs/app/building-your-app
 
 ## Running Locally
 
-```bash
-$ bun dev
+```zsh
+$ yarn dev
 ```
 
 ## Learn More
