@@ -75,7 +75,6 @@ export async function readAccessToken() {
 export async function setAccessToken() {
   const jwt = getGitHubJWT();
   const installation = await getInstallation(jwt);
-  console.log('installation',installation)
   accessToken = await getAccessToken(installation.id, jwt);
 
   return accessToken;

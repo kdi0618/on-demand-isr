@@ -1,8 +1,10 @@
 import crypto from 'crypto';
+import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 
 export async function POST(request: Request) {
   try {
+    const requestHeaders = headers();
     const text = await request.text();
 
     const signature = crypto
@@ -12,7 +14,7 @@ export async function POST(request: Request) {
 
     const trusted = Buffer.from(`sha256=${signature}`, 'ascii');
     const untrusted = Buffer.from(
-      request.headers.get('x-hub-signature-256') || '',
+      requestHeaders.get('x-hub-signature-256') || '',
       'ascii'
     );
 
@@ -26,7 +28,7 @@ export async function POST(request: Request) {
       });
     }
 
-    const payload = JSON.parse(text);
+    const payload = JSON.parse(decodeURIComponent(text).replace('payload=', ''));
     const issueNumber = payload.issue?.number;
 
     console.log('[Next.js] Revalidating /');
@@ -37,6 +39,7 @@ export async function POST(request: Request) {
       revalidatePath(`/${issueNumber}`);
     }
   } catch (error) {
+    console.error('[Next.js] Error handling webhook:', error);
     return new Response(`Webhook error: ${error.message}`, {
       status: 400,
     });
