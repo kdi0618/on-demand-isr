@@ -14,7 +14,7 @@ async function getAccessToken(installationId: number, token: string) {
 }
 
 function getGitHubJWT() {
-  if (!process.env.GITHUB_APP_ID || !process.env.GITHUB_APP_PK_PEM) {
+  if (!process.env.GITHUB_APP_ID || !process.env.GITHUB_APP_PK_PEM?.replace(/\\n/g, '\n')) {
     throw new Error(
       'GITHUB_APP_ID and GITHUB_APP_PK_PEM must be defined in .env.local'
     );
@@ -26,7 +26,7 @@ function getGitHubJWT() {
       iss: process.env.GITHUB_APP_ID,
       exp: Math.floor(Date.now() / 1000) + 60 * 10, // 10 minutes is the max
     },
-    process.env.GITHUB_APP_PK_PEM,
+    process.env.GITHUB_APP_PK_PEM.replace(/\\n/g, '\n'),
     {
       algorithm: 'RS256',
     }
@@ -35,7 +35,7 @@ function getGitHubJWT() {
 
 async function getInstallation(token: string) {
   const installations = await fetchGitHub('/app/installations', token);
-  return installations.find((i: any) => i.account.login === 'leerob');
+  return installations.find((i: any) => i.account.login === 'kdi0618');
 }
 
 function createGitHubRequest(path: string, token: string, opts: any = {}) {
@@ -75,6 +75,7 @@ export async function readAccessToken() {
 export async function setAccessToken() {
   const jwt = getGitHubJWT();
   const installation = await getInstallation(jwt);
+  console.log('installation',installation)
   accessToken = await getAccessToken(installation.id, jwt);
 
   return accessToken;
@@ -82,8 +83,8 @@ export async function setAccessToken() {
 
 export async function fetchIssueAndRepoData() {
   const [issues, repoDetails] = await Promise.all([
-    fetchGitHub('/repos/leerob/on-demand-isr/issues', accessToken),
-    fetchGitHub('/repos/leerob/on-demand-isr', accessToken),
+    fetchGitHub('/repos/kdi0618/on-demand-isr/issues', accessToken),
+    fetchGitHub('/repos/kdi0618/on-demand-isr', accessToken),
   ]);
 
   console.log('[Next.js] Fetching data for /');
@@ -98,12 +99,12 @@ export async function fetchIssueAndRepoData() {
 
 export async function fetchIssuePageData(id: string) {
   const [issue, comments, repoDetails] = await Promise.all([
-    fetchGitHub(`/repos/leerob/on-demand-isr/issues/${id}`, accessToken),
+    fetchGitHub(`/repos/kdi0618/on-demand-isr/issues/${id}`, accessToken),
     fetchGitHub(
-      `/repos/leerob/on-demand-isr/issues/${id}/comments`,
+      `/repos/kdi0618/on-demand-isr/issues/${id}/comments`,
       accessToken
     ),
-    fetchGitHub('/repos/leerob/on-demand-isr', accessToken),
+    fetchGitHub('/repos/kdi0618/on-demand-isr', accessToken),
   ]);
 
   console.log(`[Next.js] Fetching data for /${id}`);
